@@ -35,6 +35,8 @@ public class EventManager
 {
     #region Shared Methods/Variables
 
+    private static bool _hasBeenInitialized;
+
     private static List<GameEvent>[] _newEvents; // List of events that have been added since the last processing
     private static Queue<GameEvent>[] _currentEvents; // Queue of events that are currently being processed
     private static Dictionary<object, GameEventListener> _eventListeners; // All of the callbacks for each type of event
@@ -70,6 +72,9 @@ public class EventManager
     /// </summary>
     /// <param name="priorityLevel">Priority level to process</param>
     private static void ProcessEvents(Priority priorityLevel) {
+        if (_hasBeenInitialized == false)
+            return;
+
         var priority = (int)priorityLevel; // ( Is actually the integer representation to save having to constantly cast )
 
         // Adds each new event into the event queue for this priority
