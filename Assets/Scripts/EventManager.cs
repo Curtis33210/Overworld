@@ -6,7 +6,7 @@ public enum Priority
     /// <summary>
     /// Event will not be queued, instead the event will fire instantly
     /// </summary>
-    Realtime = Length + 1,
+    Realtime = 0,
 
     /// <summary>
     /// High priority is the highest priority queue (Real time will still be run first)
@@ -56,6 +56,8 @@ public class EventManager
         }
 
         _eventListeners = new Dictionary<object, GameEventListener>();
+
+        _hasBeenInitialized = true;
     }
     
     /// <summary>
@@ -72,7 +74,7 @@ public class EventManager
     /// </summary>
     /// <param name="priorityLevel">Priority level to process</param>
     private static void ProcessEvents(Priority priorityLevel) {
-        if (_hasBeenInitialized == false)
+        if (_hasBeenInitialized == false || _newEvents[(int)priorityLevel].Count == 0)
             return;
 
         var priority = (int)priorityLevel; // ( Is actually the integer representation to save having to constantly cast )

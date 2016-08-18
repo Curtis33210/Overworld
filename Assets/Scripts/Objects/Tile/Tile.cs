@@ -3,10 +3,9 @@ using System.Collections.Generic;
 
 public enum TileType
 {
-    Empty, 
+    Empty = -1, 
     Grass, 
-    Stone, 
-    Length
+    Stone
 }
 
 public class Tile
@@ -23,8 +22,6 @@ public class Tile
         YPos = yPos;
 
         _eventManager = new EventManager();
-
-        _eventManager.RegisterEvent(TileEvents.TileCreated, this);
     }
 
     public void ChangeTileType(TileType newType, bool sendEvent = true) {
@@ -32,6 +29,15 @@ public class Tile
 
         if (sendEvent)
             _eventManager.RegisterEvent(TileEvents.TileTypeChanged, this);
+    }
+
+    public override int GetHashCode() {
+        int hash = 23;
+
+        hash = (hash * 31) + XPos;
+        hash = (hash * 31) + YPos;
+
+        return hash;
     }
 
     /* 

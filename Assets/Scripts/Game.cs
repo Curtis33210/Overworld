@@ -25,9 +25,13 @@ public class Game : MonoBehaviour
     private void Start() {
         ActiveWorld = new World(_mapWidth, _mapHeight);
 
+        ActiveWorld.CreateTestWorld();
     }
 
     private void Update() {
         EventManager.ProcessEvents();
+
+        if (Input.GetKeyDown(KeyCode.K))
+            ActiveWorld.RandomizeTiles();
     }
 }
