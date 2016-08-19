@@ -1,4 +1,4 @@
-﻿
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 public enum Priority
@@ -6,7 +6,7 @@ public enum Priority
     /// <summary>
     /// Event will not be queued, instead the event will fire instantly
     /// </summary>
-    Realtime = Length + 1,
+    Realtime = 0,
 
     /// <summary>
     /// High priority is the highest priority queue (Real time will still be run first)
@@ -35,6 +35,8 @@ public class EventManager
 {
     #region Shared Methods/Variables
 
+    private static bool _hasBeenInitialized;
+
     private static List<GameEvent>[] _newEvents; // List of events that have been added since the last processing
     private static Queue<GameEvent>[] _currentEvents; // Queue of events that are currently being processed
     private static Dictionary<object, GameEventListener> _eventListeners; // All of the callbacks for each type of event
@@ -54,12 +56,15 @@ public class EventManager
         }
 
         _eventListeners = new Dictionary<object, GameEventListener>();
+
+        _hasBeenInitialized = true;
     }
     
     /// <summary>
     /// Processes every event (In all priority levels except real time)
     /// </summary>
     public static void ProcessEvents() {
+
         ProcessEvents(Priority.High);
         ProcessEvents(Priority.Normal);
         ProcessEvents(Priority.Low);
@@ -70,20 +75,35 @@ public class EventManager
     /// </summary>
     /// <param name="priorityLevel">Priority level to process</param>
     private static void ProcessEvents(Priority priorityLevel) {
+        if (_hasBeenInitialized == false || _newEvents[(int)priorityLevel].Count == 0)
+            return;
+
+        Profiler.BeginSample("Process Events");
+
         var priority = (int)priorityLevel; // ( Is actually the integer representation to save having to constantly cast )
 
+        Profiler.BeginSample("Copying Events");
         // Adds each new event into the event queue for this priority
         for (int i = 0; i < _newEvents[priority].Count; i++) {
             _currentEvents[priority].Enqueue(_newEvents[priority][i]);
         }
+        Profiler.EndSample();
 
+
+        Profiler.BeginSample("Clear");
         // All the events have been registered so it can be cleared 
-        _newEvents[priority].Clear();
+        _newEvents[priority] = new List<GameEvent>();
 
+        Profiler.EndSample();
+
+        Profiler.BeginSample("Going through event Queue");
         // Actually process each event
         while (_currentEvents[priority].Count > 0) {
             ProcessEvent(_currentEvents[priority].Dequeue());
         }
+        Profiler.EndSample();
+
+        Profiler.EndSample();
     }
 
     /// <summary>
