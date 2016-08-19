@@ -28,7 +28,7 @@ public class Tile
         Type = newType;
 
         if (sendEvent)
-            _eventManager.RegisterEvent(TileEvents.TileTypeChanged, this);
+            _eventManager.RegisterEvent(TileEvent.TileTypeChanged, this);
     }
 
     public override int GetHashCode() {

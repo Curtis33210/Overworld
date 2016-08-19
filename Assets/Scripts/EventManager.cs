@@ -1,4 +1,4 @@
-﻿
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 public enum Priority
@@ -64,6 +64,7 @@ public class EventManager
     /// Processes every event (In all priority levels except real time)
     /// </summary>
     public static void ProcessEvents() {
+
         ProcessEvents(Priority.High);
         ProcessEvents(Priority.Normal);
         ProcessEvents(Priority.Low);
@@ -77,20 +78,32 @@ public class EventManager
         if (_hasBeenInitialized == false || _newEvents[(int)priorityLevel].Count == 0)
             return;
 
+        Profiler.BeginSample("Process Events");
+
         var priority = (int)priorityLevel; // ( Is actually the integer representation to save having to constantly cast )
 
+        Profiler.BeginSample("Copying Events");
         // Adds each new event into the event queue for this priority
         for (int i = 0; i < _newEvents[priority].Count; i++) {
             _currentEvents[priority].Enqueue(_newEvents[priority][i]);
         }
+        Profiler.EndSample();
 
+
+        Profiler.BeginSample("Clear");
         // All the events have been registered so it can be cleared 
-        _newEvents[priority].Clear();
+        _newEvents[priority] = new List<GameEvent>();
 
+        Profiler.EndSample();
+
+        Profiler.BeginSample("Going through event Queue");
         // Actually process each event
         while (_currentEvents[priority].Count > 0) {
             ProcessEvent(_currentEvents[priority].Dequeue());
         }
+        Profiler.EndSample();
+
+        Profiler.EndSample();
     }
 
     /// <summary>

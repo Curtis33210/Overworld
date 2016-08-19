@@ -24,7 +24,7 @@ public class Game : MonoBehaviour
     
     private void Start() {
         ActiveWorld = new World(_mapWidth, _mapHeight);
-
+        
         ActiveWorld.CreateTestWorld();
     }
 
