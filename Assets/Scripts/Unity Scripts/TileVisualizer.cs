@@ -25,7 +25,6 @@ public class TileVisualizer : MonoBehaviour
     private Dictionary<Vector2, TileChunk> _loadedChunks;
     
     private Vector2 _currentChunkCoordinates = new Vector2(-1, -1);
-    private bool _loadingChunk = false;
 
     private void Awake() {
         _loadedChunks = new Dictionary<Vector2, TileChunk>();
@@ -74,10 +73,8 @@ public class TileVisualizer : MonoBehaviour
         Vector2 newPos = (Vector3)gEvent.Args;
 
         if (GetChunkCoordinatesAt((int)newPos.x, (int)newPos.y) != _currentChunkCoordinates) {
-            //Debug.Log("Updating Chunks");
             _currentChunkCoordinates = GetChunkCoordinatesAt((int)newPos.x, (int)newPos.y);
             StartCoroutine("UpdateActiveChunks");
-            //UpdateActiveChunks();
         }
         Profiler.EndSample();
     }
@@ -100,15 +97,23 @@ public class TileVisualizer : MonoBehaviour
         }
 
         for (int i = 0; i < newChunks.Count; i++) {
-            LoadChunk(newChunks[i]);
+            var chunk = GetTileChunk();
+            _loadedChunks.Add(newChunks[i], chunk);
+        }
+
+        for (int i = 0; i < newChunks.Count; i++) {
+            if (_loadedChunks.ContainsKey(newChunks[i]) == false)
+                continue;
+
+            var chunk = _loadedChunks[newChunks[i]];
+            LoadChunk(newChunks[i], chunk);
             yield return null;
         }
     }
 
     private List<Vector2> NewChunks() {
         var newChunk = new List<Vector2>((LoadedChunksBuffer * 2) + 1);
-
-
+        
         for (int y = (int)_currentChunkCoordinates.y - LoadedChunksBuffer; y <= (int)_currentChunkCoordinates.y + LoadedChunksBuffer; y++) {
             for (int x = (int)_currentChunkCoordinates.x - LoadedChunksBuffer; x <= (int)_currentChunkCoordinates.x + LoadedChunksBuffer; x++) {
                 if (x < 0 || y < 0)
@@ -121,12 +126,10 @@ public class TileVisualizer : MonoBehaviour
         return newChunk;
     }
 
-    private void LoadChunk(Vector2 chunkCoordinate) {
+    private void LoadChunk(Vector2 chunkCoordinate, TileChunk chunk) {
         var xOffset = (int)chunkCoordinate.x * ChunkSize;
         var yOffset = (int)chunkCoordinate.y * ChunkSize;
-
-        var chunk = GetTileChunk();
-        _loadedChunks.Add(chunkCoordinate, chunk);
+        
         var world = FindObjectOfType<Game>().ActiveWorld;
 
         for (int x = 0; x < ChunkSize; x++) {
@@ -143,8 +146,10 @@ public class TileVisualizer : MonoBehaviour
     }
 
     private void UnloadChunk(Vector2 chunkCoordinate) {
-        if (_loadedChunks.ContainsKey(chunkCoordinate) == false)
+        if (_loadedChunks.ContainsKey(chunkCoordinate) == false) {
             Debug.LogError("Trying to unload a chunk that is not loaded");
+            return;
+        }
 
         var chunk = _loadedChunks[chunkCoordinate];
         _loadedChunks.Remove(chunkCoordinate);
