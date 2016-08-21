@@ -66,6 +66,17 @@ public class TileVisualizer : MonoBehaviour
     private void OnTileTypeChanged(GameEvent gEvent) {
         var tile = (Tile)gEvent.Args;
 
+        var chunkPos = GetChunkCoordinatesAt(tile.XPos, tile.YPos);
+
+        if (_loadedChunks.ContainsKey(chunkPos) == false)
+            return;
+
+        var localPosX = tile.XPos % ChunkSize;
+        var localPosY = tile.YPos % ChunkSize;
+
+        var tileGameObject = _loadedChunks[chunkPos].GetTileObject(localPosX, localPosY);
+
+        SetGameObjectSprite(tileGameObject, _tileSprites[(int)tile.Type]);
     }
 
     private void OnCameraMoved(GameEvent gEvent) {
