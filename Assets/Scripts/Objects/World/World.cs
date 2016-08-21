@@ -37,7 +37,8 @@ public class World
     public void RandomizeTiles() {
         for (int y = 0; y < _tiles.Length; y++) {
             for (int x = 0; x < _tiles[y].Length; x++) {
-                _tiles[y][x].ChangeTileType((TileType)UnityEngine.Random.Range(0, 2));
+                if (UnityEngine.Random.Range(0, 100) == 0)
+                    _tiles[y][x].ChangeTileType((TileType)UnityEngine.Random.Range(0, 2));
             }
         }
     }
